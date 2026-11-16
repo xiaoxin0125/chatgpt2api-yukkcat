@@ -45,6 +45,12 @@ implement a second save lifecycle. The UI owns polling and presentation only.
 
 ## Upstream Account memory maintenance
 
+Account and quota synchronization persists a non-empty upstream `account_id`
+from the default account returned by the account-check endpoint. Memory requests
+use that stored ID or the Access Token's `chatgpt_account_id` claim for the
+`ChatGPT-Account-ID` header, never a User ID or management ID. Existing accounts
+missing both sources must synchronize account and quota before memory maintenance.
+
 The Accounts runtime sends an explicit or scoped selection and an enable,
 disable, refresh or clear action to `POST /api/accounts/memory`. The route resolves
 a fixed list of management IDs and schedules `AccountService.manage_account_memory` through
