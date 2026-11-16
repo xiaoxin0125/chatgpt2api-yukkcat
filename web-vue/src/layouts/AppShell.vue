@@ -1235,7 +1235,6 @@ function clearUpdateTaskPollTimer() {
 function applyUpdateTask(task: UpdateTaskResponse, open: boolean) {
   if (task.state === 'idle') return
   updateTargetTag.value = normalizeVersionTag(task.latest_tag || updateTargetTag.value)
-  currentVersionTag.value = normalizeVersionTag(task.current_tag || currentVersionTag.value)
   updateProgressState.open = open
   updateProgressState.title = task.busy ? '正在更新 ChatGPT2API' : 'ChatGPT2API 更新'
   updateProgressState.subtitle = task.latest_tag ? `目标版本 ${normalizeVersionTag(task.latest_tag)}` : ''
@@ -1310,12 +1309,16 @@ async function pollUpdateTask() {
     clearUpdateTaskPollTimer()
     await checkForUpdates(false)
     const targetTag = normalizeVersionTag(task.latest_tag)
+    if (task.state !== 'succeeded' || !targetTag) return
+    const runtimeTag = await loadCurrentVersion()
     if (
       !updateReloadScheduled
-      && task.state === 'succeeded'
-      && targetTag
-      && normalizeVersionTag(localVersion) !== targetTag
+      && runtimeTag
+      && normalizeVersionTag(localVersion) !== runtimeTag
+      && getStringPreference(preferenceKeys.updateReloadConsumedTaskId) !== task.task_id
     ) {
+      setStringPreference(preferenceKeys.updateReloadConsumedTaskId, task.task_id)
+      if (getStringPreference(preferenceKeys.updateReloadConsumedTaskId) !== task.task_id) return
       updateReloadScheduled = true
       window.setTimeout(() => window.location.reload(), 400)
     }
@@ -1362,9 +1365,12 @@ async function checkForUpdates(showMessage = true, openAvailable = false) {
 async function loadCurrentVersion() {
   try {
     const result = await versionApi.current()
-    const runtimeVersion = String(result.tag || '').trim()
-    if (runtimeVersion) currentVersionTag.value = runtimeVersion
-  } catch {}
+    const runtimeTag = normalizeVersionTag(String(result.version || ''))
+    if (runtimeTag) currentVersionTag.value = runtimeTag
+    return runtimeTag
+  } catch {
+    return ''
+  }
 }
 
 function handleSystemThemeChange() {

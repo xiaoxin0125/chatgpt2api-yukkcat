@@ -21,6 +21,7 @@ export const preferenceKeys = {
   studioSidebarWidth: 'studio-sidebar-width',
   themeMode: 'theme-mode',
   updateActiveTaskId: 'update-active-task-id',
+  updateReloadConsumedTaskId: 'update-reload-consumed-task-id',
   updateDismissedTag: 'update-dismissed-tag',
 } as const
 

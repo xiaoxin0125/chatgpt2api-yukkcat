@@ -24,6 +24,10 @@ The route source is
 | `/debug` | Redirect only | Redirects to `/studio`; it is not a separate page |
 
 `AppShell.vue` owns authenticated product navigation and header-level overlays.
+Update-task history does not replace the running version returned by `/version`.
+After a successful update task, automatic page reload requires a confirmed
+running version different from the built frontend version. A persisted consumed
+task ID limits automatic reload to once per task, even if cached assets remain.
 Each page owns its responsive composition and has one explicit scroll owner per
 scrolling region.
 
